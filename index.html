@@ -663,21 +663,36 @@
     $$(".j-wglyph").forEach(function(el){ el.innerHTML = GLYPHS[m[1]] || GLYPHS.cloud; });
     $$(".j-wxbox").forEach(function(el){ el.classList.remove("off"); });
   }
+  var wxOk = false, wxLast = 0, wxTries = 0, wxTimer = null;
+  function scheduleWx(ms){
+    clearTimeout(wxTimer);
+    wxTimer = setTimeout(fetchWx, ms);
+  }
   function fetchWx(){
     var loc = getLoc();
     setText(".j-loc", loc.name || "");
     var u = "https://api.open-meteo.com/v1/forecast?latitude="+loc.lat+"&longitude="+loc.lon+
             "&current=temperature_2m,weather_code,relative_humidity_2m"+
             "&daily=temperature_2m_max,temperature_2m_min&timezone=auto";
-    fetch(u).then(function(r){
+    fetch(u, {cache:"no-store"}).then(function(r){
       if(!r.ok) throw new Error(r.status);
       return r.json();
-    }).then(renderWx).catch(function(){
-      $$(".j-wxbox").forEach(function(el){ el.classList.add("off"); });
+    }).then(function(j){
+      renderWx(j);
+      wxOk = true; wxTries = 0; wxLast = Date.now();
+      scheduleWx(30*60*1000);
+    }).catch(function(){
+      /* 한 번이라도 받아온 적이 있으면 화면은 그대로 두고 조용히 다시 시도한다.
+         홈 화면에서 띄우면 Wi-Fi가 붙기 전에 첫 요청이 나가는 일이 잦다. */
+      if(!wxOk) $$(".j-wxbox").forEach(function(el){ el.classList.add("off"); });
+      wxTries++;
+      scheduleWx(Math.min(8000 * wxTries, 120000));
     });
   }
   fetchWx();
-  setInterval(fetchWx, 30*60*1000);
+  document.addEventListener("visibilitychange", function(){
+    if(!document.hidden && Date.now() - wxLast > 5*60*1000) fetchWx();
+  });
 
   /* ── 설정 패널 ─────────────────────────────── */
   var panelWrap = $("#panelWrap");
@@ -829,6 +844,7 @@
         try{ localStorage.setItem("bbclock.loc", JSON.stringify(loc)); }catch(e){}
         locStatus.textContent = "현재: " + loc.name;
         locInput.value = "";
+        wxOk = false; wxTries = 0;
         fetchWx();
       })
       .catch(function(){ locStatus.textContent = "네트워크에 접근할 수 없습니다"; });
