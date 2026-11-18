@@ -53,7 +53,7 @@
 
   /* ════ 기본 스타일 = 가로(landscape) 우선 · iPad 1180×820 / 1366×1024 ════ */
 
-  /* ── 1 · 미니멀 산세리프 ───────────────────────── */
+  /* ── 1 · 중앙 정렬 ─────────────────────────────── */
   .v1{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:min(5vh,46px);text-align:center}
   .v1 .date{
     font:300 clamp(13px,1.7vw,23px)/1 var(--kr);
@@ -69,13 +69,21 @@
   .v1 .wx{
     position:absolute;left:0;right:0;
     bottom:calc(min(11vh,92px) + env(safe-area-inset-bottom));
-    font:200 clamp(14px,1.8vw,24px)/1 "Inter",var(--kr);
-    color:var(--dim);letter-spacing:.16em;
-    display:flex;align-items:center;justify-content:center;gap:.7em;
+    padding:0 max(18px,env(safe-area-inset-left));
+    font:200 clamp(13px,1.6vw,21px)/1 "Inter",var(--kr);
+    color:var(--dim);letter-spacing:.14em;
+    display:flex;align-items:center;justify-content:center;
+    gap:min(2.6vw,34px);
   }
+  .v1 .wx .wi{display:flex;align-items:center;gap:.55em;white-space:nowrap}
+  .v1 .wx .wi+.wi{
+    border-left:1px solid var(--hair);
+    padding-left:min(2.6vw,34px);
+  }
+  .v1 .wx .wk{color:var(--faint);letter-spacing:.24em;font-size:.76em}
   .v1 .wxg{color:var(--faint)}
 
-  /* ── 2 · 에디토리얼 세리프 (좌상 시간 · 우하 캡션) ── */
+  /* ── 2 · 에디토리얼 (좌상 시간 · 우하 캡션) ──────── */
   .v2 .time{
     position:absolute;left:6vw;top:11vh;
     font-family:var(--time-font,"Playfair Display"),serif;
@@ -183,7 +191,7 @@
   }
   .v3 .cell .wxg{color:var(--dim);margin-right:.5em}
 
-  /* ── 4 · 스플릿 (좌 70% 시간 · 우 헤어라인 정보 컬럼) ── */
+  /* ── 4 · 스플릿 (좌 시간 · 우 헤어라인 정보 컬럼) ── */
   .v4{display:flex;flex-direction:row}
   .v4 .main{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;min-width:0}
   .v4 .time{
@@ -354,7 +362,15 @@
     <div class="date j-date"></div>
     <div class="time j-hm"></div>
     <div class="wx j-wxbox off">
-      <span class="wxg j-wglyph" aria-hidden="true"></span><span class="j-wword"></span><span class="j-wtemp"></span>
+      <span class="wi">
+        <span class="wxg j-wglyph" aria-hidden="true"></span><span class="j-wword"></span><span class="j-wtemp"></span>
+      </span>
+      <span class="wi">
+        <span class="wk">습도</span><span class="j-whum"></span>
+      </span>
+      <span class="wi">
+        <span class="wk">최고 · 최저</span><span class="j-whi"></span> / <span class="j-wlo"></span>
+      </span>
     </div>
   </section>
 
@@ -410,10 +426,10 @@
 
 <div id="chrome">
   <div id="dots" role="tablist" aria-label="디자인 선택">
-    <button data-go="1" aria-label="미니멀 산세리프"></button>
-    <button data-go="2" aria-label="에디토리얼 세리프"></button>
+    <button data-go="1" aria-label="중앙 정렬"></button>
+    <button data-go="2" aria-label="에디토리얼"></button>
     <button data-go="3" aria-label="플랩 보드"></button>
-    <button data-go="4" aria-label="스플릿 레이아웃"></button>
+    <button data-go="4" aria-label="스플릿"></button>
   </div>
   <div id="tools">
     <button class="tbtn" id="gearBtn" aria-label="설정">
@@ -426,7 +442,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
         <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>
       </svg>
-      <span id="fsTip">iPad Safari에서는 공유 → '홈 화면에 추가'로<br>전체 화면을 사용할 수 있습니다</span>
+      <span id="fsTip">iPad Safari는 이 버튼을 지원하지 않습니다.<br>공유 &rarr; &lsquo;홈 화면에 추가&rsquo;로 실행하면 전체 화면이 됩니다</span>
     </button>
   </div>
 </div>
@@ -457,7 +473,7 @@
       <div class="status" id="locStatus"></div>
     </div>
 
-    <div class="note">iPad에서 화면이 계속 켜져 있으려면 이 페이지를 홈 화면에 추가해 실행하는 것이 가장 안정적입니다.</div>
+    <div class="note">화면이 꺼지지 않게 하려면 iPad 설정 &gt; 디스플레이 및 밝기 &gt; 자동 잠금을 &lsquo;안 함&rsquo;으로 두십시오. iOS는 웹페이지가 스스로 잠금을 막는 것을 허용하지 않습니다.</div>
   </div>
 </div>
 
@@ -519,7 +535,7 @@
   document.addEventListener("visibilitychange",function(){ if(!document.hidden) tick(); });
 
   /* ── 디자인 전환 ───────────────────────────── */
-  var VNAMES = {1:"미니멀 산세리프",2:"에디토리얼 세리프",3:"플랩 보드",4:"스플릿 레이아웃"};
+  var VNAMES = {1:"중앙 정렬",2:"에디토리얼",3:"플랩 보드",4:"스플릿"};
   var vname = $("#vname"), vnameT = null;
   function setVariant(n, quiet){
     n = String(n);
