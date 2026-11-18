@@ -2,6 +2,8 @@
 
 iPad 가로모드 전용 풀스크린 시계. 단일 HTML 파일이며 빌드 과정이 없다.
 
+현재 버전: **v1.0**
+
 공개 주소: https://ceek-tech.github.io/bb-clock/
 
 ## 디자인
@@ -34,3 +36,7 @@ Screen Wake Lock API는 iOS Safari에서 지원되지 않아 페이지가 스스
 
 ## 배포
 main 브랜치 루트를 GitHub Pages로 서빙한다. index.html을 수정하고 푸시하면 반영된다.
+
+## 보류 중
+- 사진 앱에서 고른 사진을 배경이나 별도 디자인으로 띄우기.
+  기술적으로 가능하며 사용자가 한 번 선택하는 단계가 필요하다.
