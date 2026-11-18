@@ -81,7 +81,6 @@
     padding-left:min(2.6vw,34px);
   }
   .v1 .wx .wk{color:var(--faint);letter-spacing:.24em;font-size:.76em}
-  .v1 .wxg{color:var(--faint)}
 
   /* ── 2 · 에디토리얼 (좌상 시간 · 우하 캡션) ──────── */
   .v2 .time{
@@ -189,7 +188,7 @@
     font-family:var(--time-font,"Archivo Black"),var(--kr);
     font-weight:var(--time-weight,400);letter-spacing:.01em;
   }
-  .v3 .cell .wxg{color:var(--dim);margin-right:.5em}
+  .v3 .cell .wxg{margin-right:.5em}
 
   /* ── 4 · 스플릿 (좌 시간 · 우 헤어라인 정보 컬럼) ── */
   .v4{display:flex;flex-direction:row}
@@ -225,7 +224,6 @@
     font:500 clamp(13px,1.6vw,21px)/1 "Space Grotesk",var(--kr);
     color:var(--dim);display:flex;align-items:center;gap:.55em;
   }
-  .v4 .wxg{color:var(--faint)}
 
   /* ════ 세로(portrait) 폴백 · 단순 스택 ════ */
   @media (orientation:portrait){
@@ -352,6 +350,21 @@
   #locInput:focus{outline:none;border-color:var(--dim)}
   #locInput::placeholder{color:var(--faint)}
   .note{font-size:11px;color:var(--faint);border-top:1px solid var(--hair);padding-top:14px;margin-top:4px}
+
+  /* ── 날씨 아이콘 색 ──────────────────────────────
+     한 아이콘에 두 색이 쓰이는 경우(구름 + 비 등)
+     부차 요소는 .g2 로 두고 --wx2 를 따른다. */
+  .wxg{color:var(--faint)}
+  .wxg .g2{stroke:var(--wx2,currentColor)}
+  .wxg[data-wx="sun"]    {color:#E8B64C}
+  .wxg[data-wx="partly"] {color:#E8B64C;--wx2:rgba(244,242,236,.46)}
+  .wxg[data-wx="cloud"]  {color:#9FAAB6}
+  .wxg[data-wx="fog"]    {color:#A6A69D}
+  .wxg[data-wx="drizzle"]{color:#7FA9CF;--wx2:rgba(244,242,236,.42)}
+  .wxg[data-wx="rain"]   {color:#6E9FCB;--wx2:rgba(244,242,236,.42)}
+  .wxg[data-wx="snow"]   {color:#AFD0E2;--wx2:rgba(244,242,236,.42)}
+  .wxg[data-wx="thunder"]{color:#E0A33E;--wx2:rgba(244,242,236,.42)}
+  .wxg[data-wx="drop"]   {color:#7FA9CF}
 </style>
 
 </head>
@@ -366,10 +379,10 @@
         <span class="wxg j-wglyph" aria-hidden="true"></span><span class="j-wword"></span><span class="j-wtemp"></span>
       </span>
       <span class="wi">
-        <span class="wk">습도</span><span class="j-whum"></span>
+        <span class="wk">최고 · 최저</span><span class="j-whi"></span> / <span class="j-wlo"></span>
       </span>
       <span class="wi">
-        <span class="wk">최고 · 최저</span><span class="j-whi"></span> / <span class="j-wlo"></span>
+        <span class="wxg j-whumg" aria-hidden="true"></span><span class="wk">습도</span><span class="j-whum"></span>
       </span>
     </div>
   </section>
@@ -400,11 +413,12 @@
         <span class="val"><span class="wxg j-wglyph" aria-hidden="true"></span><span class="j-wword"></span> <span class="j-wtemp1"></span></span>
       </div>
       <div class="cell">
-        <span class="k">습도</span><span class="val j-whum"></span>
-      </div>
-      <div class="cell">
         <span class="k">최고 · 최저</span>
         <span class="val"><span class="j-whi"></span> / <span class="j-wlo"></span></span>
+      </div>
+      <div class="cell">
+        <span class="k">습도</span>
+        <span class="val"><span class="wxg j-whumg" aria-hidden="true"></span><span class="j-whum"></span></span>
       </div>
     </div>
   </section>
@@ -629,15 +643,20 @@
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">'+inner+'</svg>';
   }
   var CLOUD = 'M7 17.5a4 4 0 1 1 .6-7.96A5 5 0 0 1 17.3 11a3.3 3.3 0 0 1-.4 6.5H7z';
+  /* 강수 아이콘의 구름은 회색으로 깔고 비·눈·번개만 색을 준다 */
+  function cloudG2(dy){
+    return '<path class="g2" d="'+CLOUD+'" transform="translate(0 '+dy+')"/>';
+  }
   var GLYPHS = {
     sun: svg('<circle cx="12" cy="12" r="4"/><path d="M12 2.8v2M12 19.2v2M2.8 12h2M19.2 12h2M5.5 5.5l1.4 1.4M17.1 17.1l1.4 1.4M18.5 5.5l-1.4 1.4M6.9 17.1l-1.4 1.4"/>'),
-    partly: svg('<circle cx="8.5" cy="8" r="3"/><path d="M8.5 2.6v1.5M3.1 8h1.5M4.7 4.2l1 1M13.3 4.2l-1 1"/><path d="M10 19.5a3.5 3.5 0 1 1 .5-6.97A4.3 4.3 0 0 1 18.9 14a2.9 2.9 0 0 1-.3 5.5H10z"/>'),
+    partly: svg('<circle cx="8.5" cy="8" r="3"/><path d="M8.5 2.6v1.5M3.1 8h1.5M4.7 4.2l1 1M13.3 4.2l-1 1"/><path class="g2" d="M10 19.5a3.5 3.5 0 1 1 .5-6.97A4.3 4.3 0 0 1 18.9 14a2.9 2.9 0 0 1-.3 5.5H10z"/>'),
     cloud: svg('<path d="'+CLOUD+'"/>'),
     fog: svg('<path d="M7 13a4 4 0 1 1 .6-7.96A5 5 0 0 1 17.3 6.6a3.3 3.3 0 0 1-.4 6.4H7z" transform="translate(0 1)"/><path d="M5 18h14M7.5 21h9"/>'),
-    drizzle: svg('<path d="'+CLOUD+'" transform="translate(0 -2)"/><path d="M9 18.5v.01M12.5 20v.01M16 18.5v.01"/>'),
-    rain: svg('<path d="'+CLOUD+'" transform="translate(0 -2.5)"/><path d="M8.5 17.5l-1 3M12.5 17.5l-1 3M16.5 17.5l-1 3"/>'),
-    snow: svg('<path d="'+CLOUD+'" transform="translate(0 -2.5)"/><path d="M9 18.2v.01M12.5 20.2v.01M16 18.2v.01M9 21v.01M16 21v.01"/>'),
-    thunder: svg('<path d="'+CLOUD+'" transform="translate(0 -2.5)"/><path d="M12.8 16l-2.3 3.4h3L11.2 23"/>')
+    drizzle: svg(cloudG2(-2)+'<path d="M9 18.5v.01M12.5 20v.01M16 18.5v.01"/>'),
+    rain: svg(cloudG2(-2.5)+'<path d="M8.5 17.5l-1 3M12.5 17.5l-1 3M16.5 17.5l-1 3"/>'),
+    snow: svg(cloudG2(-2.5)+'<path d="M9 18.2v.01M12.5 20.2v.01M16 18.2v.01M9 21v.01M16 21v.01"/>'),
+    thunder: svg(cloudG2(-2.5)+'<path d="M12.8 16l-2.3 3.4h3L11.2 23"/>'),
+    drop: svg('<path d="M12 3.6c3.2 3.7 5.1 6.3 5.1 8.8a5.1 5.1 0 0 1-10.2 0c0-2.5 1.9-5.1 5.1-8.8z"/>')
   };
   var DEFAULT_LOC = {lat:37.5665, lon:126.9780, name:"서울"};
   function getLoc(){
@@ -660,7 +679,14 @@
       setText(".j-whi", Math.round(day.temperature_2m_max[0])+"°");
       setText(".j-wlo", Math.round(day.temperature_2m_min[0])+"°");
     }
-    $$(".j-wglyph").forEach(function(el){ el.innerHTML = GLYPHS[m[1]] || GLYPHS.cloud; });
+    $$(".j-wglyph").forEach(function(el){
+      el.innerHTML = GLYPHS[m[1]] || GLYPHS.cloud;
+      el.dataset.wx = GLYPHS[m[1]] ? m[1] : "cloud";
+    });
+    $$(".j-whumg").forEach(function(el){
+      el.innerHTML = GLYPHS.drop;
+      el.dataset.wx = "drop";
+    });
     $$(".j-wxbox").forEach(function(el){ el.classList.remove("off"); });
   }
   var wxOk = false, wxLast = 0, wxTries = 0, wxTimer = null;
